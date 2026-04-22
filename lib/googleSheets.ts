@@ -1,7 +1,38 @@
 import { google } from "googleapis";
-import type { sheets_v4 } from "googleapis";
+import type { drive_v3, sheets_v4 } from "googleapis";
 import { Readable } from "stream";
 import type { EventRecord } from "./types";
+
+/**
+ * En cuentas personales de Google, los archivos creados por la cuenta de servicio
+ * pueden contar contra una cuota distinta. Tras crear el archivo, transferir
+ * propiedad a un usuario (Gmail) hace que "pesen" en su Drive.
+ * @see https://developers.google.com/drive/api/v3/reference/permissions/create
+ */
+function driveTransferOwnerEmail(): string | null {
+  const explicit = process.env.GOOGLE_DRIVE_TRANSFER_OWNER_EMAIL?.trim();
+  if (explicit) return explicit.toLowerCase();
+  const admin = process.env.ADMIN_EMAIL?.trim();
+  return admin ? admin.toLowerCase() : null;
+}
+
+async function transferFileOwnershipToUser(
+  drive: drive_v3.Drive,
+  fileId: string
+): Promise<void> {
+  const email = driveTransferOwnerEmail();
+  if (!email) return;
+  await drive.permissions.create({
+    fileId,
+    requestBody: {
+      role: "owner",
+      type: "user",
+      emailAddress: email,
+    },
+    transferOwnership: true,
+    supportsAllDrives: true,
+  });
+}
 
 function getPrivateKey(): string {
   const raw = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY ?? "";
@@ -123,6 +154,7 @@ export async function exportToGoogleSheets(
         requestBody: { role: "reader", type: "anyone" },
         supportsAllDrives: true,
       });
+      await transferFileOwnershipToUser(drive, fileId);
       const formula = `=IMAGE("https://drive.google.com/uc?id=${fileId}")`;
       cell = {
         updateCells: {
@@ -211,6 +243,8 @@ export async function exportToGoogleSheets(
       requests: [...formulaRequests, ...dimensionRequests],
     },
   });
+
+  await transferFileOwnershipToUser(drive, spreadsheetId);
 
   const link =
     createRes.data.webViewLink ??
