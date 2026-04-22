@@ -2,19 +2,25 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <main className="mx-auto max-w-lg px-4 py-16">
-      <h1 className="text-2xl font-semibold text-gray-900">
-        Firma y asistencia
-      </h1>
-      <p className="mt-3 text-gray-600">
-        Los participantes acceden con el enlace que comparte el administrador.
-      </p>
-      <Link
-        href="/admin"
-        className="mt-8 inline-block rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50"
-      >
-        Panel de administración
-      </Link>
+    <main className="mx-auto max-w-lg px-4 py-16 sm:py-24">
+      <div className="glass-panel text-center">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-300/90">
+          Asistencia digital
+        </p>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+          Firma y asistencia
+        </h1>
+        <p className="mx-auto mt-4 max-w-md text-pretty text-sm leading-relaxed text-slate-300 sm:text-base">
+          Los participantes acceden con el enlace que comparte el administrador,
+          firman en el dispositivo y queda todo listo para exportar.
+        </p>
+        <Link
+          href="/admin"
+          className="btn-primary mt-10 max-w-xs mx-auto"
+        >
+          Panel de administración
+        </Link>
+      </div>
     </main>
   );
 }

@@ -4,17 +4,36 @@ import { signIn } from "next-auth/react";
 
 export function AdminSignIn() {
   return (
-    <div className="mx-auto max-w-md rounded border border-gray-200 bg-white px-6 py-10 text-center shadow-sm">
-      <h1 className="text-xl font-semibold text-gray-900">
+    <div className="glass-panel w-full max-w-md text-center">
+      <div
+        className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-white/20 bg-gradient-to-br from-violet-500/30 to-fuchsia-500/20 shadow-inner"
+        aria-hidden
+      >
+        <svg
+          className="h-8 w-8 text-violet-200"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={1.5}
+        >
+          <title>Administración</title>
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
+          />
+        </svg>
+      </div>
+      <h1 className="mt-8 text-2xl font-semibold tracking-tight text-white">
         Administración
       </h1>
-      <p className="mt-2 text-sm text-gray-600">
+      <p className="mt-3 text-sm leading-relaxed text-slate-300">
         Inicia sesión con la cuenta de Google autorizada.
       </p>
       <button
         type="button"
         onClick={() => signIn("google", { callbackUrl: "/admin" })}
-        className="mt-8 w-full rounded border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-800 hover:bg-gray-50"
+        className="btn-primary mt-10 touch-manipulation"
       >
         Continuar con Google
       </button>

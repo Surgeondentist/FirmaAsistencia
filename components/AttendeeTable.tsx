@@ -7,39 +7,64 @@ type Props = {
 export function AttendeeTable({ attendees }: Props) {
   if (attendees.length === 0) {
     return (
-      <p className="rounded border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-center text-sm text-gray-600">
+      <p className="rounded-2xl border border-dashed border-white/20 bg-white/[0.04] px-6 py-10 text-center text-sm text-slate-400 backdrop-blur-md">
         Aún no hay registros de asistencia.
       </p>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded border border-gray-200">
-      <table className="min-w-full divide-y divide-gray-200 text-left text-sm">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-3 py-2 font-medium text-gray-700">Nombre</th>
-            <th className="px-3 py-2 font-medium text-gray-700">Documento</th>
-            <th className="px-3 py-2 font-medium text-gray-700">Hora envío</th>
-            <th className="px-3 py-2 font-medium text-gray-700">Firma</th>
+    <div className="glass-table-wrap overflow-x-auto">
+      <table className="min-w-full text-left text-sm">
+        <thead>
+          <tr className="border-b border-white/10 bg-white/[0.06]">
+            <th
+              scope="col"
+              className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-slate-400"
+            >
+              Nombre
+            </th>
+            <th
+              scope="col"
+              className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-slate-400"
+            >
+              Documento
+            </th>
+            <th
+              scope="col"
+              className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-slate-400"
+            >
+              Hora envío
+            </th>
+            <th
+              scope="col"
+              className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-slate-400"
+            >
+              Firma
+            </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100 bg-white">
+        <tbody className="divide-y divide-white/10">
           {attendees.map((a) => (
-            <tr key={a.id}>
-              <td className="px-3 py-2 text-gray-900">{a.name}</td>
-              <td className="px-3 py-2 text-gray-800">{a.documentId}</td>
-              <td className="px-3 py-2 text-gray-600">
+            <tr
+              key={a.id}
+              className="bg-transparent transition hover:bg-white/[0.04]"
+            >
+              <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-100">
+                {a.name}
+              </td>
+              <td className="px-4 py-3 text-slate-300">{a.documentId}</td>
+              <td className="whitespace-nowrap px-4 py-3 text-slate-400">
                 {new Date(a.submittedAt).toLocaleString("es-ES")}
               </td>
-              <td className="px-3 py-2">
+              <td className="px-4 py-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={a.signatureDataUrl}
                   alt={`Firma de ${a.name}`}
                   width={150}
                   height={50}
-                  className="h-[50px] w-[150px] border border-gray-100 bg-white object-contain"
+                  className="h-[50px] w-[150px] rounded-lg border border-white/15 bg-white/90 object-contain shadow-inner"
                 />
               </td>
             </tr>

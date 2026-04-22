@@ -52,9 +52,31 @@ export function AttendForm({ eventId }: Props) {
 
   if (done) {
     return (
-      <div className="rounded border border-emerald-200 bg-emerald-50 px-4 py-6 text-center">
-        <p className="font-medium text-emerald-900">¡Listo!</p>
-        <p className="mt-2 text-sm text-emerald-800">
+      <div
+        className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-8 text-center backdrop-blur-md"
+        role="status"
+      >
+        <div
+          className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-emerald-400/40 bg-emerald-500/20"
+          aria-hidden
+        >
+          <svg
+            className="h-6 w-6 text-emerald-200"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <title>Correcto</title>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+        </div>
+        <p className="mt-4 text-lg font-semibold text-emerald-100">¡Listo!</p>
+        <p className="mt-2 text-sm leading-relaxed text-emerald-100/90">
           Tu asistencia ha sido registrada correctamente.
         </p>
       </div>
@@ -62,12 +84,9 @@ export function AttendForm({ eventId }: Props) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-5">
+    <form onSubmit={onSubmit} className="space-y-6">
       <div>
-        <label
-          htmlFor="name"
-          className="block text-sm font-medium text-gray-800"
-        >
+        <label htmlFor="name" className="glass-label">
           Nombre completo
         </label>
         <input
@@ -77,14 +96,11 @@ export function AttendForm({ eventId }: Props) {
           autoComplete="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-base shadow-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500"
+          className="glass-input touch-manipulation"
         />
       </div>
       <div>
-        <label
-          htmlFor="documentId"
-          className="block text-sm font-medium text-gray-800"
-        >
+        <label htmlFor="documentId" className="glass-label">
           Número de documento
         </label>
         <input
@@ -93,27 +109,30 @@ export function AttendForm({ eventId }: Props) {
           required
           value={documentId}
           onChange={(e) => setDocumentId(e.target.value)}
-          className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-base shadow-sm focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500"
+          className="glass-input touch-manipulation"
         />
       </div>
       <div>
-        <span className="block text-sm font-medium text-gray-800">Firma</span>
-        <p className="mt-0.5 text-xs text-gray-500">
+        <span className="glass-label">Firma</span>
+        <p className="glass-hint mt-1">
           Usa el dedo o el ratón en el recuadro.
         </p>
-        <div className="mt-2">
+        <div className="mt-3">
           <SignatureCanvas ref={sigRef} />
         </div>
       </div>
       {error ? (
-        <p className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+        <p
+          className="rounded-xl border border-red-400/35 bg-red-500/15 px-4 py-3 text-sm text-red-100 backdrop-blur-md"
+          role="alert"
+        >
           {error}
         </p>
       ) : null}
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded bg-gray-900 px-4 py-3 text-base font-medium text-white hover:bg-gray-800 disabled:opacity-60"
+        className="btn-primary touch-manipulation"
       >
         {loading ? "Enviando…" : "Enviar asistencia"}
       </button>

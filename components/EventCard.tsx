@@ -9,32 +9,30 @@ export function EventCard({ event }: Props) {
   const count = event.attendees.length;
   const badge =
     event.status === "open" ? (
-      <span className="rounded bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-800 ring-1 ring-emerald-200">
-        Abierto
-      </span>
+      <span className="badge-open">Abierto</span>
     ) : (
-      <span className="rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 ring-1 ring-gray-200">
-        Cerrado
-      </span>
+      <span className="badge-closed">Cerrado</span>
     );
 
   const created = new Date(event.createdAt).toLocaleString("es-ES");
 
   return (
-    <div className="flex flex-col gap-2 rounded border border-gray-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
-      <div>
+    <div className="glass-panel-soft flex flex-col gap-4 transition duration-200 hover:border-white/25 hover:bg-white/[0.08] sm:flex-row sm:items-center sm:justify-between">
+      <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <h2 className="font-medium text-gray-900">{event.name}</h2>
+          <h2 className="text-lg font-semibold tracking-tight text-white">
+            {event.name}
+          </h2>
           {badge}
         </div>
-        <p className="mt-1 text-sm text-gray-500">{created}</p>
-        <p className="text-sm text-gray-600">
+        <p className="mt-2 text-xs text-slate-400">{created}</p>
+        <p className="mt-1 text-sm text-slate-300">
           {count} asistente{count === 1 ? "" : "s"}
         </p>
       </div>
       <Link
         href={`/admin/event/${event.id}`}
-        className="inline-flex shrink-0 justify-center rounded border border-gray-300 px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50"
+        className="btn-secondary shrink-0 touch-manipulation sm:min-w-[140px]"
       >
         Ver detalle
       </Link>

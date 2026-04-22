@@ -166,11 +166,11 @@ export const SignatureCanvas = forwardRef<SignatureCanvasHandle>(
   }));
 
   return (
-    <div className="space-y-2">
-      <div className="rounded border border-gray-300 bg-white touch-none">
+    <div className="space-y-3">
+      <div className="touch-none overflow-hidden rounded-xl border border-white/20 bg-white/95 shadow-inner shadow-black/10 ring-1 ring-white/10">
         <canvas
           ref={canvasRef}
-          className="block h-40 w-full cursor-crosshair"
+          className="block h-44 w-full min-h-[176px] cursor-crosshair touch-manipulation sm:h-40"
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={endStroke}
@@ -181,7 +181,7 @@ export const SignatureCanvas = forwardRef<SignatureCanvasHandle>(
       <button
         type="button"
         onClick={clear}
-        className="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-800 hover:bg-gray-50"
+        className="btn-ghost min-h-[44px] px-4 py-2 touch-manipulation"
       >
         Limpiar
       </button>

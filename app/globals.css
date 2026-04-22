@@ -2,6 +2,101 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-white text-gray-900 antialiased;
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply min-h-dvh font-sans text-slate-100 antialiased;
+    background-color: #020617;
+    background-image:
+      radial-gradient(
+        ellipse 140% 90% at 50% -30%,
+        rgba(124, 58, 237, 0.45),
+        transparent 55%
+      ),
+      radial-gradient(
+        ellipse 90% 70% at 100% 0%,
+        rgba(59, 130, 246, 0.22),
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse 70% 60% at 0% 100%,
+        rgba(217, 70, 239, 0.18),
+        transparent 45%
+      ),
+      radial-gradient(
+        ellipse 80% 50% at 80% 80%,
+        rgba(14, 165, 233, 0.12),
+        transparent 40%
+      );
+    background-attachment: fixed;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body {
+      background-attachment: scroll;
+    }
+  }
+}
+
+@layer components {
+  /* Panel principal tipo cristal */
+  .glass-panel {
+    @apply rounded-2xl border border-white/20 bg-white/[0.07] p-6 shadow-[0_8px_40px_rgba(0,0,0,0.45)] backdrop-blur-2xl sm:p-8;
+  }
+
+  .glass-panel-soft {
+    @apply rounded-2xl border border-white/15 bg-white/[0.05] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:p-6;
+  }
+
+  /* Campos: fondo casi opaco para contraste AA */
+  .glass-input {
+    @apply mt-2 w-full min-h-[48px] rounded-xl border border-white/10 bg-white/90 px-4 py-3 text-base text-slate-900 shadow-inner shadow-black/5 placeholder:text-slate-500 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-400/80;
+  }
+
+  .glass-label {
+    @apply block text-sm font-medium text-slate-200;
+  }
+
+  .glass-hint {
+    @apply text-xs text-slate-400;
+  }
+
+  .btn-primary {
+    @apply inline-flex min-h-[48px] w-full items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-3 text-base font-semibold text-white shadow-lg shadow-violet-950/50 transition duration-200 hover:from-violet-500 hover:to-fuchsia-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-violet-300 focus-visible:ring-offset-slate-950 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply inline-flex min-h-[48px] items-center justify-center rounded-xl border border-white/25 bg-white/10 px-4 py-2.5 text-sm font-medium text-slate-100 shadow-sm backdrop-blur-md transition hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60;
+  }
+
+  .btn-ghost {
+    @apply inline-flex min-h-[44px] items-center justify-center rounded-xl border border-white/15 bg-transparent px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30;
+  }
+
+  .link-back {
+    @apply inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-slate-200 backdrop-blur-md transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/70;
+  }
+
+  .badge-open {
+    @apply inline-flex items-center rounded-lg border border-emerald-400/35 bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-emerald-100;
+  }
+
+  .badge-closed {
+    @apply inline-flex items-center rounded-lg border border-slate-400/35 bg-slate-500/20 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-slate-200;
+  }
+
+  .glass-table-wrap {
+    @apply overflow-hidden rounded-2xl border border-white/15 bg-white/[0.06] shadow-[0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-xl;
+  }
+
+  .modal-scrim {
+    @apply fixed inset-0 z-50 flex items-end justify-center bg-slate-950/70 p-4 backdrop-blur-sm sm:items-center;
+  }
+
+  .modal-panel {
+    @apply w-full max-w-md rounded-2xl border border-white/20 bg-slate-900/80 p-6 shadow-2xl backdrop-blur-2xl;
+  }
 }

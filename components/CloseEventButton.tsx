@@ -38,12 +38,12 @@ export function CloseEventButton({ eventId, disabled }: Props) {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <button
         type="button"
         disabled={disabled || loading}
         onClick={onClose}
-        className="rounded bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+        className="btn-primary w-full sm:w-auto touch-manipulation disabled:opacity-50"
       >
         {loading ? (
           <span className="inline-flex items-center gap-2">
@@ -58,16 +58,21 @@ export function CloseEventButton({ eventId, disabled }: Props) {
         )}
       </button>
       {error ? (
-        <p className="text-sm text-red-700">{error}</p>
+        <p
+          className="rounded-xl border border-red-400/35 bg-red-500/15 px-4 py-3 text-sm text-red-100"
+          role="alert"
+        >
+          {error}
+        </p>
       ) : null}
       {sheetUrl ? (
-        <div className="rounded border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-          <p className="font-medium">Hoja de Google creada</p>
+        <div className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-sm text-emerald-50 backdrop-blur-md">
+          <p className="font-semibold text-emerald-100">Hoja de Google creada</p>
           <a
             href={sheetUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-2 inline-block break-all text-emerald-800 underline"
+            className="mt-3 inline-block break-all text-violet-200 underline decoration-violet-400/50 underline-offset-2 transition hover:text-white"
           >
             {sheetUrl}
           </a>

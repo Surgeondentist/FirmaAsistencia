@@ -68,45 +68,52 @@ export function AdminDashboard({ events: initialEvents }: Props) {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+    <div className="mx-auto max-w-3xl">
+      <header className="flex flex-col gap-6 border-b border-white/10 pb-10 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Eventos</h1>
-          <p className="mt-1 text-sm text-gray-600">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-300/90">
+            Panel
+          </p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white">
+            Eventos
+          </h1>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-300">
             Crea un evento y comparte el enlace con los participantes.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-3">
           <button
             type="button"
             onClick={() => {
               setModalOpen(true);
               setCreateError(null);
             }}
-            className="rounded bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+            className="btn-primary w-auto min-w-[160px] touch-manipulation"
           >
             Crear evento
           </button>
           <button
             type="button"
             onClick={() => signOut({ callbackUrl: "/admin" })}
-            className="rounded border border-gray-300 bg-white px-4 py-2 text-sm text-gray-800 hover:bg-gray-50"
+            className="btn-ghost touch-manipulation"
           >
             Cerrar sesión
           </button>
         </div>
-      </div>
+      </header>
 
       {lastShare ? (
-        <div className="mt-6 rounded border border-gray-200 bg-gray-50 p-4">
-          <p className="text-sm font-medium text-gray-800">
+        <div className="glass-panel-soft mt-10 border-violet-400/20">
+          <p className="text-sm font-semibold text-violet-100">
             Enlace del último evento creado
           </p>
-          <p className="mt-1 break-all text-sm text-gray-700">{lastShare}</p>
+          <p className="mt-2 break-all font-mono text-xs leading-relaxed text-slate-200 sm:text-sm">
+            {lastShare}
+          </p>
           <button
             type="button"
             onClick={copyShare}
-            className="mt-3 rounded border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-100"
+            className="btn-secondary mt-4 touch-manipulation"
           >
             {copied ? "Copiado" : "Copiar al portapapeles"}
           </button>
@@ -122,27 +129,28 @@ export function AdminDashboard({ events: initialEvents }: Props) {
       </ul>
 
       {events.length === 0 ? (
-        <p className="mt-8 text-center text-sm text-gray-500">
-          No hay eventos todavía.
+        <p className="mt-12 text-center text-sm text-slate-400">
+          No hay eventos todavía. Crea el primero con el botón de arriba.
         </p>
       ) : null}
 
       {modalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 p-4 sm:items-center">
+        <div className="modal-scrim">
           <div
             role="dialog"
             aria-modal="true"
-            className="w-full max-w-md rounded-lg border border-gray-200 bg-white p-6 shadow-lg"
+            aria-labelledby="modal-new-event-title"
+            className="modal-panel"
           >
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2
+              id="modal-new-event-title"
+              className="text-lg font-semibold tracking-tight text-white"
+            >
               Nuevo evento
             </h2>
-            <form onSubmit={createEvent} className="mt-4 space-y-4">
+            <form onSubmit={createEvent} className="mt-6 space-y-5">
               <div>
-                <label
-                  htmlFor="eventName"
-                  className="block text-sm font-medium text-gray-800"
-                >
+                <label htmlFor="eventName" className="glass-label">
                   Nombre del evento
                 </label>
                 <input
@@ -150,24 +158,29 @@ export function AdminDashboard({ events: initialEvents }: Props) {
                   required
                   value={eventName}
                   onChange={(e) => setEventName(e.target.value)}
-                  className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                  className="glass-input text-sm touch-manipulation"
                 />
               </div>
               {createError ? (
-                <p className="text-sm text-red-700">{createError}</p>
+                <p
+                  className="rounded-xl border border-red-400/35 bg-red-500/15 px-3 py-2 text-sm text-red-100"
+                  role="alert"
+                >
+                  {createError}
+                </p>
               ) : null}
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="rounded border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50"
+                  className="btn-ghost touch-manipulation sm:min-w-0"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={creating}
-                  className="rounded bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+                  className="btn-primary w-full sm:w-auto sm:min-w-[120px] touch-manipulation"
                 >
                   {creating ? "Creando…" : "Crear"}
                 </button>
