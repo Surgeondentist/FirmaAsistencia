@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions, isAdminEmail } from "@/lib/auth";
-import { exportToGoogleSheets } from "@/lib/googleSheets";
+import {
+  buildEventXlsxBuffer,
+  contentDispositionAttachment,
+  xlsxAttachmentFilename,
+} from "@/lib/eventExportXlsx";
 import { getEvent, saveEvent } from "@/lib/kv";
 
 export async function POST(
@@ -23,30 +27,20 @@ export async function POST(
   await saveEvent(event);
 
   try {
-    const sheetUrl = await exportToGoogleSheets(event);
-    return NextResponse.json({ sheetUrl });
+    const buffer = await buildEventXlsxBuffer(event);
+    const filename = xlsxAttachmentFilename(event);
+    return new NextResponse(new Uint8Array(buffer), {
+      status: 200,
+      headers: {
+        "Content-Type":
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "Content-Disposition": contentDispositionAttachment(filename),
+        "Cache-Control": "no-store",
+      },
+    });
   } catch (e) {
-    const message = formatGoogleExportError(e);
+    const message =
+      e instanceof Error ? e.message : "No se pudo generar el archivo Excel.";
     return NextResponse.json({ error: message }, { status: 500 });
   }
-}
-
-function formatGoogleExportError(e: unknown): string {
-  const raw =
-    e instanceof Error ? e.message : "Error al exportar a Google Sheets.";
-  if (/storage quota has been exceeded|quota exceeded|storageQuotaExceeded/i.test(raw)) {
-    return (
-      "La cuota de Google Drive está llena. El espacio cuenta contra la cuenta " +
-      "que es dueña de la carpeta donde exportas (la que compartiste con la " +
-      "cuenta de servicio): libera espacio, vacía la papelera o usa otra carpeta " +
-      "de una cuenta con almacenamiento disponible."
-    );
-  }
-  if (/insufficientPermissions|403|permission denied/i.test(raw)) {
-    return (
-      "Google rechazó el acceso. Comprueba que la carpeta de Drive esté " +
-      "compartida con el email de la cuenta de servicio, con rol Editor."
-    );
-  }
-  return raw;
 }

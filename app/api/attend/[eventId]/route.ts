@@ -1,13 +1,27 @@
 import { NextResponse } from "next/server";
 import { nanoid } from "nanoid";
 import { getEvent, saveEvent } from "@/lib/kv";
-import type { Attendee } from "@/lib/types";
+import type { Attendee, EventRecord } from "@/lib/types";
+
+const MAX_SIGNATURE_CHARS = 6_000_000;
+const MAX_TEXT_FIELD_CHARS = 2000;
 
 type Body = {
-  name?: string;
-  documentId?: string;
-  signatureDataUrl?: string;
+  values?: Record<string, string>;
 };
+
+function trimValues(
+  event: EventRecord,
+  raw: Record<string, string> | undefined
+): Record<string, string> | null {
+  if (!raw || typeof raw !== "object") return null;
+  const out: Record<string, string> = {};
+  for (const col of event.columns) {
+    const v = typeof raw[col.id] === "string" ? raw[col.id].trim() : "";
+    out[col.id] = v;
+  }
+  return out;
+}
 
 export async function POST(
   req: Request,
@@ -24,35 +38,6 @@ export async function POST(
     );
   }
 
-  const name = typeof body.name === "string" ? body.name.trim() : "";
-  const documentId =
-    typeof body.documentId === "string" ? body.documentId.trim() : "";
-  const signatureDataUrl =
-    typeof body.signatureDataUrl === "string"
-      ? body.signatureDataUrl.trim()
-      : "";
-
-  if (!name || !documentId || !signatureDataUrl) {
-    return NextResponse.json(
-      { error: "Nombre, documento y firma son obligatorios." },
-      { status: 400 }
-    );
-  }
-
-  if (!signatureDataUrl.startsWith("data:image/png")) {
-    return NextResponse.json(
-      { error: "La firma debe ser PNG (data URL)." },
-      { status: 400 }
-    );
-  }
-
-  if (signatureDataUrl.length > 20000) {
-    return NextResponse.json(
-      { error: "La firma supera el tamaño máximo permitido." },
-      { status: 400 }
-    );
-  }
-
   const event = await getEvent(eventId);
   if (!event) {
     return NextResponse.json({ error: "Evento no encontrado." }, { status: 404 });
@@ -64,12 +49,50 @@ export async function POST(
     );
   }
 
+  const values = trimValues(event, body.values);
+  if (!values) {
+    return NextResponse.json(
+      { error: "Faltan los datos del formulario (values)." },
+      { status: 400 }
+    );
+  }
+
+  for (const col of event.columns) {
+    const v = values[col.id] ?? "";
+    if (col.kind === "text") {
+      if (!v) {
+        return NextResponse.json(
+          { error: `El campo «${col.label}» es obligatorio.` },
+          { status: 400 }
+        );
+      }
+      if (v.length > MAX_TEXT_FIELD_CHARS) {
+        return NextResponse.json(
+          { error: `El campo «${col.label}» es demasiado largo.` },
+          { status: 400 }
+        );
+      }
+    }
+    if (col.kind === "signature") {
+      if (!v || !v.startsWith("data:image/png")) {
+        return NextResponse.json(
+          { error: "La firma debe ser una imagen PNG (data URL)." },
+          { status: 400 }
+        );
+      }
+      if (v.length > MAX_SIGNATURE_CHARS) {
+        return NextResponse.json(
+          { error: "La firma supera el tamaño máximo permitido." },
+          { status: 400 }
+        );
+      }
+    }
+  }
+
   const attendee: Attendee = {
     id: nanoid(6),
-    name,
-    documentId,
     submittedAt: new Date().toISOString(),
-    signatureDataUrl,
+    values,
   };
 
   event.attendees.push(attendee);

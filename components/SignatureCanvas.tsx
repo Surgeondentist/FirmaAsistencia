@@ -167,7 +167,7 @@ export const SignatureCanvas = forwardRef<SignatureCanvasHandle>(
 
   return (
     <div className="space-y-3">
-      <div className="touch-none overflow-hidden rounded-xl border border-white/20 bg-white/95 shadow-inner shadow-black/10 ring-1 ring-white/10">
+      <div className="touch-none overflow-hidden rounded-xl border-2 border-slate-400 bg-white shadow-inner shadow-slate-900/10 ring-1 ring-slate-300/90 dark:border-white/20 dark:bg-white/95 dark:shadow-black/10 dark:ring-white/10">
         <canvas
           ref={canvasRef}
           className="block h-44 w-full min-h-[176px] cursor-crosshair touch-manipulation sm:h-40"

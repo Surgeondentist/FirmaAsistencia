@@ -2,8 +2,20 @@ import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { getServerSession } from "next-auth/next";
 
-function adminEmail(): string {
-  return (process.env.ADMIN_EMAIL ?? "").trim().toLowerCase();
+/** Correos permitidos para el panel; `ADMIN_EMAIL` con varios separados por coma o punto y coma. */
+function parseAdminEmails(): string[] {
+  const raw = process.env.ADMIN_EMAIL ?? "";
+  return raw
+    .split(/[,;]/)
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function isAllowedAdminEmail(email: string | null | undefined): boolean {
+  if (!email) return false;
+  const normalized = email.trim().toLowerCase();
+  const allowed = parseAdminEmails();
+  return allowed.length > 0 && allowed.includes(normalized);
 }
 
 export const authOptions: NextAuthOptions = {
@@ -23,8 +35,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user }) {
       const email = user.email?.trim().toLowerCase();
-      const allowed = adminEmail();
-      if (!allowed || !email || email !== allowed) {
+      if (!email || !isAllowedAdminEmail(email)) {
         return false;
       }
       return true;
@@ -38,14 +49,12 @@ export const authOptions: NextAuthOptions = {
 export async function getAdminSession() {
   const session = await getServerSession(authOptions);
   const email = session?.user?.email?.trim().toLowerCase();
-  if (!email || email !== adminEmail()) {
+  if (!email || !isAllowedAdminEmail(email)) {
     return null;
   }
   return session;
 }
 
 export function isAdminEmail(email: string | null | undefined): boolean {
-  if (!email) return false;
-  const allowed = adminEmail();
-  return Boolean(allowed && email.trim().toLowerCase() === allowed);
+  return isAllowedAdminEmail(email);
 }

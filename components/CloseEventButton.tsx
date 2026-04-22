@@ -8,28 +8,70 @@ type Props = {
   disabled: boolean;
 };
 
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function filenameFromContentDisposition(header: string | null): string | null {
+  if (!header) return null;
+  const mStar = header.match(/filename\*=UTF-8''([^;]+)/i);
+  if (mStar?.[1]) {
+    try {
+      return decodeURIComponent(mStar[1].trim());
+    } catch {
+      return mStar[1];
+    }
+  }
+  const m = header.match(/filename="([^"]+)"/i);
+  return m?.[1] ?? null;
+}
+
 export function CloseEventButton({ eventId, disabled }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sheetUrl, setSheetUrl] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
 
   async function onClose() {
     setError(null);
+    setDone(false);
     setLoading(true);
     try {
       const res = await fetch(`/api/admin/events/${eventId}/close`, {
         method: "POST",
       });
-      const data = (await res.json()) as { error?: string; sheetUrl?: string };
+      const type = res.headers.get("content-type") ?? "";
+
       if (!res.ok) {
-        setError(data.error ?? "No se pudo cerrar ni exportar.");
+        if (type.includes("application/json")) {
+          const data = (await res.json()) as { error?: string };
+          setError(data.error ?? "No se pudo cerrar el evento.");
+        } else {
+          setError(`Error ${res.status}`);
+        }
         return;
       }
-      if (data.sheetUrl) {
-        setSheetUrl(data.sheetUrl);
-        router.refresh();
+
+      if (!type.includes("spreadsheetml")) {
+        setError("Respuesta inesperada del servidor.");
+        return;
       }
+
+      const blob = await res.blob();
+      const name =
+        filenameFromContentDisposition(res.headers.get("content-disposition")) ??
+        `asistencia-${eventId}.xlsx`;
+      downloadBlob(blob, name);
+      setDone(true);
+      router.refresh();
     } catch {
       setError("Error de red.");
     } finally {
@@ -51,31 +93,27 @@ export function CloseEventButton({ eventId, disabled }: Props) {
               className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
               aria-hidden
             />
-            Cerrando y exportando…
+            Cerrando y generando Excel…
           </span>
         ) : (
-          "Cerrar evento y exportar"
+          "Cerrar evento y descargar Excel"
         )}
       </button>
       {error ? (
         <p
-          className="rounded-xl border border-red-400/35 bg-red-500/15 px-4 py-3 text-sm text-red-100"
+          className="rounded-xl border border-red-300/60 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-400/35 dark:bg-red-500/15 dark:text-red-100"
           role="alert"
         >
           {error}
         </p>
       ) : null}
-      {sheetUrl ? (
-        <div className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-sm text-emerald-50 backdrop-blur-md">
-          <p className="font-semibold text-emerald-100">Hoja de Google creada</p>
-          <a
-            href={sheetUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-3 inline-block break-all text-violet-200 underline decoration-violet-400/50 underline-offset-2 transition hover:text-white"
-          >
-            {sheetUrl}
-          </a>
+      {done ? (
+        <div className="rounded-xl border border-emerald-300/60 bg-emerald-50/95 p-4 text-sm text-emerald-900 backdrop-blur-md dark:border-emerald-400/30 dark:bg-emerald-500/10 dark:text-emerald-50">
+          <p className="font-semibold text-emerald-900 dark:text-emerald-100">Listo</p>
+          <p className="mt-2 leading-relaxed text-emerald-800/95 dark:text-emerald-100/90">
+            El evento quedó cerrado y se descargó el archivo{" "}
+            <span className="font-mono text-xs">.xlsx</span> con la tabla y las firmas.
+          </p>
         </div>
       ) : null}
     </div>

@@ -4,13 +4,13 @@ export default function Home() {
   return (
     <main className="mx-auto max-w-lg px-4 py-16 sm:py-24">
       <div className="glass-panel text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-300/90">
+        <p className="theme-eyebrow text-xs font-semibold uppercase tracking-[0.2em]">
           Asistencia digital
         </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+        <h1 className="theme-heading mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
           Firma y asistencia
         </h1>
-        <p className="mx-auto mt-4 max-w-md text-pretty text-sm leading-relaxed text-slate-300 sm:text-base">
+        <p className="theme-sub mx-auto mt-4 max-w-md text-pretty text-sm leading-relaxed sm:text-base">
           Los participantes acceden con el enlace que comparte el administrador,
           firman en el dispositivo y queda todo listo para exportar.
         </p>

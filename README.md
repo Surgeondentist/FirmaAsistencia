@@ -1,20 +1,19 @@
 # Firma y asistencia
 
-Aplicación web mínima para que un administrador cree eventos de asistencia, comparta un enlace temporal, recoja nombre, documento y firma manuscrita por participante, cierre el evento y exporte todo a una hoja de Google (firmas como imágenes ligeras en celdas).
+Aplicación web mínima para que un administrador cree eventos de asistencia, comparta un enlace temporal, recoja nombre, documento y firma manuscrita por participante, cierre el evento y descargue todo en un **Excel (.xlsx)** con las firmas como imágenes en la hoja.
 
-Stack: Next.js 14 (App Router), Tailwind CSS, Vercel KV, NextAuth (Google, un solo correo admin), Google Sheets + Drive (cuenta de servicio), despliegue en Vercel.
+Stack: Next.js 14 (App Router), Tailwind CSS, Vercel KV, NextAuth (Google, un solo correo admin), generación de Excel con ExcelJS, despliegue en Vercel.
 
 ## Requisitos
 
 - Node.js 18+
-- Cuenta Vercel con KV
-- Proyecto Google Cloud con APIs de Sheets y Drive
-- Cuenta de servicio con acceso a una carpeta de Drive compartida
+- Cuenta Vercel con KV (o Redis compatible vía `@vercel/kv`)
+- Proyecto Google Cloud solo para **OAuth** de inicio de sesión (NextAuth): credenciales OAuth cliente web
 
 ## Instalación local
 
 1. `npm install`
-2. Copia `.env.example` a `.env.local` y completa todas las variables (ver sección siguiente).
+2. Copia `.env.example` a `.env.local` y completa las variables (ver sección siguiente).
 3. `npm run dev` y abre [http://localhost:3000](http://localhost:3000).
 
 ## Variables de entorno (`.env.local`)
@@ -24,19 +23,16 @@ Stack: Next.js 14 (App Router), Tailwind CSS, Vercel KV, NextAuth (Google, un so
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | OAuth de Google para NextAuth. |
 | `NEXTAUTH_SECRET` | Secreto para firmar cookies de sesión. |
 | `NEXTAUTH_URL` | URL pública de la app (en local: `http://localhost:3000`). |
-| `ADMIN_EMAIL` | Único correo que puede usar el panel `/admin`. |
-| `GOOGLE_SERVICE_ACCOUNT_EMAIL` | Email de la cuenta de servicio. |
-| `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` | Clave privada del JSON (incluye saltos de línea como `\n`). |
-| `GOOGLE_DRIVE_FOLDER_ID` | Carpeta de Drive donde se crean hojas e imágenes de firmas (compartida con la cuenta de servicio). |
-| `KV_*` | Credenciales del almacén Vercel KV. |
+| `ADMIN_EMAIL` | Correo(s) que pueden usar el panel `/admin` (varios: separados por coma o `;`). |
+| `KV_*` o `STORAGE_KV_*` | Credenciales del almacén Redis/KV. |
 
-## Configuración en Google Cloud
+## Configuración en Google Cloud (solo login admin)
 
-1. Crea un proyecto y habilita **Google Sheets API** y **Google Drive API**.
-2. Crea una **cuenta de servicio**, descarga el JSON y copia `client_email` y `private_key` a las variables `GOOGLE_SERVICE_ACCOUNT_*`.
-3. Crea una carpeta en Drive, copia su ID de la URL y asígnalo a `GOOGLE_DRIVE_FOLDER_ID`.
-4. Comparte esa carpeta con el email de la cuenta de servicio (rol Editor).
-5. Crea credenciales **OAuth 2.0** (tipo aplicación web o escritorio según prefieras; para NextAuth suele usarse cliente web) y rellena `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET`.
+1. Crea un proyecto (o usa uno existente).
+2. APIs y servicios → Credenciales → Crear credenciales → **ID de cliente OAuth** (aplicación web).
+3. Orígenes autorizados: `http://localhost:3000` (y tu dominio en producción). URI de redirección: `http://localhost:3000/api/auth/callback/google` (y el equivalente en producción).
+4. Pantalla de consentimiento OAuth con tu correo de contacto.
+5. Rellena `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` en `.env.local`.
 
 ## Vercel KV
 
@@ -49,11 +45,25 @@ Stack: Next.js 14 (App Router), Tailwind CSS, Vercel KV, NextAuth (Google, un so
 2. Configura las mismas variables de entorno que en `.env.local`, con `NEXTAUTH_URL` apuntando a tu dominio de producción.
 3. Despliega; las rutas `/api/*` y el uso de KV funcionan en el entorno serverless.
 
+## Dominio personalizado (ej. `firmero.redshell.cloud`)
+
+1. **DNS** (donde gestionas `redshell.cloud`): crea un registro que apunte al hosting, por ejemplo **CNAME** `firmero` → `cname.vercel-dns.com` (o el valor que indique Vercel al añadir el dominio).
+2. **Vercel**: proyecto → *Settings* → *Domains* → añade `firmero.redshell.cloud`, verifica y espera a que el certificado SSL quede activo.
+3. **Variables de entorno en Vercel** (y en `.env.local` si pruebas contra producción):
+   - `NEXTAUTH_URL=https://firmero.redshell.cloud` (sin `/` al final).
+4. **Google Cloud Console** (credencial OAuth “aplicación web”):
+   - *Orígenes JavaScript autorizados*: `https://firmero.redshell.cloud`
+   - *URI de redirección autorizadas*: `https://firmero.redshell.cloud/api/auth/callback/google`
+   - Mantén también las entradas de `http://localhost:3000` si sigues desarrollando en local.
+5. **Redeploy** del proyecto en Vercel tras cambiar variables o dominios.
+
+El enlace del logo inferior usa la misma base que `NEXTAUTH_URL` (en local abre `localhost:3000`).
+
 ## Rutas principales
 
 - `/attend/[eventId]` — Formulario público de asistencia.
-- `/admin` — Lista de eventos y creación (solo el correo de `ADMIN_EMAIL`).
-- `/admin/event/[eventId]` — Detalle, firmas y cierre con exportación a Sheets.
+- `/admin` — Lista de eventos y creación (solo correos listados en `ADMIN_EMAIL`).
+- `/admin/event/[eventId]` — Detalle, firmas y cierre con descarga **.xlsx**.
 
 ## Scripts
 

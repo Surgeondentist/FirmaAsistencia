@@ -1,4 +1,5 @@
 import { createClient } from "@vercel/kv";
+import { normalizeEvent } from "@/lib/eventNormalize";
 import type { EventRecord } from "./types";
 
 /**
@@ -47,10 +48,11 @@ function eventKey(id: string) {
 export async function getEvent(id: string): Promise<EventRecord | null> {
   const data = await client().get<string>(eventKey(id));
   if (!data) return null;
-  if (typeof data === "string") {
-    return JSON.parse(data) as EventRecord;
-  }
-  return data as unknown as EventRecord;
+  const parsed =
+    typeof data === "string"
+      ? (JSON.parse(data) as EventRecord)
+      : (data as unknown as EventRecord);
+  return normalizeEvent(parsed);
 }
 
 export async function saveEvent(event: EventRecord): Promise<void> {
@@ -67,4 +69,14 @@ export async function registerEventId(id: string): Promise<void> {
   if (!current.includes(id)) {
     await client().set(EVENTS_LIST_KEY, [id, ...current]);
   }
+}
+
+export async function unregisterEventId(id: string): Promise<void> {
+  const current = await listEventIds();
+  const next = current.filter((x) => x !== id);
+  await client().set(EVENTS_LIST_KEY, next);
+}
+
+export async function deleteEvent(id: string): Promise<void> {
+  await client().del(eventKey(id));
 }

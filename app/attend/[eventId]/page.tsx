@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { AttendForm } from "@/components/AttendForm";
+import { signatureColumn } from "@/lib/eventColumns";
 import { getEvent } from "@/lib/kv";
 
 export const dynamic = "force-dynamic";
@@ -17,11 +18,11 @@ export default async function AttendPage({ params }: Props) {
       <main className="mx-auto max-w-md px-4 py-12 sm:py-16">
         <div className="glass-panel text-center">
           <div
-            className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-white/20 bg-white/10"
+            className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-slate-200/90 bg-slate-100/80 dark:border-white/20 dark:bg-white/10"
             aria-hidden
           >
             <svg
-              className="h-7 w-7 text-slate-300"
+              className="theme-muted h-7 w-7"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -35,12 +36,12 @@ export default async function AttendPage({ params }: Props) {
               />
             </svg>
           </div>
-          <h1 className="mt-6 text-xl font-semibold tracking-tight text-white">
+          <h1 className="theme-heading mt-6 text-xl font-semibold tracking-tight">
             Este evento ya ha cerrado
           </h1>
-          <p className="mt-3 text-sm leading-relaxed text-slate-300">
+          <p className="theme-sub mt-3 text-sm leading-relaxed">
             Ya no es posible registrar asistencia para{" "}
-            <span className="font-medium text-white">
+            <span className="theme-heading font-medium">
               &ldquo;{event.name}&rdquo;
             </span>
             .
@@ -53,18 +54,20 @@ export default async function AttendPage({ params }: Props) {
   return (
     <main className="mx-auto max-w-md px-4 py-8 sm:py-12">
       <header className="mb-8 text-center sm:text-left">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-300/90">
+        <p className="theme-eyebrow text-xs font-semibold uppercase tracking-[0.2em]">
           Registro de asistencia
         </p>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+        <h1 className="theme-heading mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
           {event.name}
         </h1>
-        <p className="mt-2 text-sm leading-relaxed text-slate-300">
-          Completa el formulario y firma para confirmar tu asistencia.
+        <p className="theme-sub mt-2 text-sm leading-relaxed">
+          {signatureColumn(event.columns)
+            ? "Completa los campos y firma para confirmar tu asistencia."
+            : "Completa los campos para confirmar tu asistencia."}
         </p>
       </header>
       <div className="glass-panel">
-        <AttendForm eventId={event.id} />
+        <AttendForm event={event} />
       </div>
     </main>
   );

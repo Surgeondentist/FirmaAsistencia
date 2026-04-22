@@ -2,13 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes cortex-dash {
+  to {
+    stroke-dashoffset: -96;
+  }
+}
+
+@keyframes cortex-node-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 @layer base {
   html {
     @apply scroll-smooth;
   }
 
   body {
-    @apply min-h-dvh font-sans text-slate-100 antialiased;
+    @apply relative min-h-dvh font-sans antialiased text-slate-950 dark:text-slate-100;
+    background-color: #f8fafc;
+    background-image:
+      radial-gradient(
+        ellipse 120% 80% at 80% -10%,
+        rgba(139, 92, 246, 0.18),
+        transparent 55%
+      ),
+      radial-gradient(
+        ellipse 90% 60% at 0% 100%,
+        rgba(217, 70, 239, 0.1),
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse 70% 50% at 100% 80%,
+        rgba(14, 165, 233, 0.08),
+        transparent 45%
+      );
+    background-attachment: fixed;
+  }
+
+  html.dark body {
     background-color: #020617;
     background-image:
       radial-gradient(
@@ -31,7 +68,6 @@
         rgba(14, 165, 233, 0.12),
         transparent 40%
       );
-    background-attachment: fixed;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -41,62 +77,152 @@
   }
 }
 
+/* Red / cortex: solo si el usuario no pide menos movimiento */
+@media (prefers-reduced-motion: no-preference) {
+  .cortex-path {
+    stroke-dasharray: 6 12;
+    stroke-dashoffset: 0;
+    animation: cortex-dash 12s linear infinite;
+  }
+
+  .cortex-path-fast {
+    animation-duration: 7s;
+  }
+
+  .cortex-path-mid {
+    animation-duration: 10s;
+  }
+
+  .cortex-path-slow {
+    animation-duration: 18s;
+  }
+
+  .cortex-node {
+    transform-origin: center;
+    animation: cortex-node-pulse 2.8s ease-in-out infinite;
+  }
+
+  .cortex-node-delay {
+    animation-delay: 0.45s;
+  }
+
+  .cortex-node-delay-2 {
+    animation-delay: 0.9s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cortex-path {
+    stroke-dasharray: none;
+    animation: none;
+  }
+
+  .cortex-node {
+    animation: none;
+    opacity: 0.65;
+  }
+}
+
+@layer utilities {
+  /* Modo claro: tonos más profundos (WCAG AA); oscuro sin cambiar demasiado */
+  .theme-heading {
+    @apply text-slate-950 dark:text-white;
+  }
+
+  .theme-sub {
+    @apply text-slate-700 dark:text-slate-300;
+  }
+
+  .theme-muted {
+    @apply text-slate-600 dark:text-slate-400;
+  }
+
+  .theme-eyebrow {
+    @apply text-violet-900 dark:text-violet-300/90;
+  }
+
+  .theme-mono-link {
+    @apply text-violet-800 dark:text-violet-200/90;
+  }
+}
+
 @layer components {
-  /* Panel principal tipo cristal */
   .glass-panel {
-    @apply rounded-2xl border border-white/20 bg-white/[0.07] p-6 shadow-[0_8px_40px_rgba(0,0,0,0.45)] backdrop-blur-2xl sm:p-8;
+    @apply rounded-2xl border p-6 backdrop-blur-2xl sm:p-8;
+    @apply border-slate-300/95 bg-white text-slate-950 shadow-lg shadow-slate-900/10;
+    @apply dark:border-white/20 dark:bg-white/[0.07] dark:text-slate-100 dark:shadow-[0_8px_40px_rgba(0,0,0,0.45)];
   }
 
   .glass-panel-soft {
-    @apply rounded-2xl border border-white/15 bg-white/[0.05] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:p-6;
+    @apply rounded-2xl border p-5 backdrop-blur-xl sm:p-6;
+    @apply border-slate-300/90 bg-white text-slate-950 shadow-md shadow-slate-900/10;
+    @apply dark:border-white/15 dark:bg-white/[0.05] dark:text-slate-100 dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)];
   }
 
-  /* Campos: fondo casi opaco para contraste AA */
   .glass-input {
-    @apply mt-2 w-full min-h-[48px] rounded-xl border border-white/10 bg-white/90 px-4 py-3 text-base text-slate-900 shadow-inner shadow-black/5 placeholder:text-slate-500 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-violet-400/80;
+    @apply mt-2 w-full min-h-[48px] rounded-xl border px-4 py-3 text-base shadow-inner transition-colors focus:border-transparent focus:outline-none focus:ring-2;
+    @apply border-slate-400 bg-white text-slate-950 placeholder:text-slate-600 focus:ring-violet-500/90;
+    @apply dark:border-white/10 dark:bg-white/90 dark:text-slate-900 dark:shadow-black/5 dark:placeholder:text-slate-500 dark:focus:ring-violet-400/80;
   }
 
   .glass-label {
-    @apply block text-sm font-medium text-slate-200;
+    @apply block text-sm font-semibold text-slate-900 dark:text-slate-200;
   }
 
   .glass-hint {
-    @apply text-xs text-slate-400;
+    @apply text-xs font-medium text-slate-600 dark:text-slate-400;
   }
 
   .btn-primary {
-    @apply inline-flex min-h-[48px] w-full items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-3 text-base font-semibold text-white shadow-lg shadow-violet-950/50 transition duration-200 hover:from-violet-500 hover:to-fuchsia-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-violet-300 focus-visible:ring-offset-slate-950 disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex min-h-[48px] w-full items-center justify-center rounded-xl bg-gradient-to-r px-5 py-3 text-base font-semibold text-white shadow-lg transition duration-200 focus:outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50;
+    @apply from-violet-600 to-fuchsia-600 shadow-violet-900/15 hover:from-violet-500 hover:to-fuchsia-500 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-100;
+    @apply dark:shadow-violet-950/50 dark:focus-visible:ring-violet-300 dark:focus-visible:ring-offset-slate-950;
   }
 
   .btn-secondary {
-    @apply inline-flex min-h-[48px] items-center justify-center rounded-xl border border-white/25 bg-white/10 px-4 py-2.5 text-sm font-medium text-slate-100 shadow-sm backdrop-blur-md transition hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60;
+    @apply inline-flex min-h-[48px] items-center justify-center rounded-xl border px-4 py-2.5 text-sm font-medium shadow-sm backdrop-blur-md transition focus:outline-none focus-visible:ring-2;
+    @apply border-slate-400/90 bg-white text-slate-900 hover:bg-slate-50 focus-visible:ring-violet-500/60;
+    @apply dark:border-white/25 dark:bg-white/10 dark:text-slate-100 dark:hover:bg-white/15 dark:focus-visible:ring-violet-400/60;
   }
 
   .btn-ghost {
-    @apply inline-flex min-h-[44px] items-center justify-center rounded-xl border border-white/15 bg-transparent px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30;
+    @apply inline-flex min-h-[44px] items-center justify-center rounded-xl border px-4 py-2 text-sm font-semibold transition focus:outline-none focus-visible:ring-2;
+    @apply border-slate-400/90 bg-slate-50 text-slate-900 hover:bg-slate-100 focus-visible:ring-slate-500/50;
+    @apply dark:border-white/15 dark:bg-transparent dark:text-slate-200 dark:hover:bg-white/10 dark:focus-visible:ring-white/30;
   }
 
   .link-back {
-    @apply inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-slate-200 backdrop-blur-md transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/70;
+    @apply inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium backdrop-blur-md transition focus:outline-none focus-visible:ring-2;
+    @apply border-slate-300/95 bg-white text-slate-900 hover:bg-slate-50 focus-visible:ring-violet-500/60;
+    @apply dark:border-white/15 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10;
   }
 
   .badge-open {
-    @apply inline-flex items-center rounded-lg border border-emerald-400/35 bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-emerald-100;
+    @apply inline-flex items-center rounded-lg border px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide;
+    @apply border-emerald-300/80 bg-emerald-100/90 text-emerald-900;
+    @apply dark:border-emerald-400/35 dark:bg-emerald-500/15 dark:text-emerald-100;
   }
 
   .badge-closed {
-    @apply inline-flex items-center rounded-lg border border-slate-400/35 bg-slate-500/20 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-slate-200;
+    @apply inline-flex items-center rounded-lg border px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide;
+    @apply border-slate-300/80 bg-slate-200/80 text-slate-800;
+    @apply dark:border-slate-400/35 dark:bg-slate-500/20 dark:text-slate-200;
   }
 
   .glass-table-wrap {
-    @apply overflow-hidden rounded-2xl border border-white/15 bg-white/[0.06] shadow-[0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-xl;
+    @apply overflow-hidden rounded-2xl border shadow-lg backdrop-blur-xl;
+    @apply border-slate-300/95 bg-white text-slate-950;
+    @apply dark:border-white/15 dark:bg-white/[0.06] dark:text-slate-100 dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)];
   }
 
   .modal-scrim {
-    @apply fixed inset-0 z-50 flex items-end justify-center bg-slate-950/70 p-4 backdrop-blur-sm sm:items-center;
+    @apply fixed inset-0 z-50 flex items-end justify-center p-4 backdrop-blur-sm sm:items-center;
+    @apply bg-slate-900/40 dark:bg-slate-950/70;
   }
 
   .modal-panel {
-    @apply w-full max-w-md rounded-2xl border border-white/20 bg-slate-900/80 p-6 shadow-2xl backdrop-blur-2xl;
+    @apply w-full max-w-md rounded-2xl border p-6 shadow-2xl backdrop-blur-2xl;
+    @apply border-slate-300/95 bg-white text-slate-950;
+    @apply dark:border-white/20 dark:bg-slate-900/80 dark:text-slate-100;
   }
 }

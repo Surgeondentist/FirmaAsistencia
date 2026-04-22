@@ -6,11 +6,11 @@ export function AdminSignIn() {
   return (
     <div className="glass-panel w-full max-w-md text-center">
       <div
-        className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-white/20 bg-gradient-to-br from-violet-500/30 to-fuchsia-500/20 shadow-inner"
+          className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-violet-200/80 bg-gradient-to-br from-violet-500/20 to-fuchsia-500/15 shadow-inner dark:border-white/20 dark:from-violet-500/30 dark:to-fuchsia-500/20"
         aria-hidden
       >
         <svg
-          className="h-8 w-8 text-violet-200"
+          className="h-8 w-8 text-violet-600 dark:text-violet-200"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -24,10 +24,10 @@ export function AdminSignIn() {
           />
         </svg>
       </div>
-      <h1 className="mt-8 text-2xl font-semibold tracking-tight text-white">
+      <h1 className="theme-heading mt-8 text-2xl font-semibold tracking-tight">
         Administración
       </h1>
-      <p className="mt-3 text-sm leading-relaxed text-slate-300">
+      <p className="theme-sub mt-3 text-sm leading-relaxed">
         Inicia sesión con la cuenta de Google autorizada.
       </p>
       <button
