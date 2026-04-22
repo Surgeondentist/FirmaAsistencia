@@ -8,32 +8,6 @@ type Props = {
   disabled: boolean;
 };
 
-function downloadBlob(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.rel = "noopener";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
-
-function filenameFromContentDisposition(header: string | null): string | null {
-  if (!header) return null;
-  const mStar = header.match(/filename\*=UTF-8''([^;]+)/i);
-  if (mStar?.[1]) {
-    try {
-      return decodeURIComponent(mStar[1].trim());
-    } catch {
-      return mStar[1];
-    }
-  }
-  const m = header.match(/filename="([^"]+)"/i);
-  return m?.[1] ?? null;
-}
-
 export function CloseEventButton({ eventId, disabled }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -48,9 +22,9 @@ export function CloseEventButton({ eventId, disabled }: Props) {
       const res = await fetch(`/api/admin/events/${eventId}/close`, {
         method: "POST",
       });
-      const type = res.headers.get("content-type") ?? "";
 
       if (!res.ok) {
+        const type = res.headers.get("content-type") ?? "";
         if (type.includes("application/json")) {
           const data = (await res.json()) as { error?: string };
           setError(data.error ?? "No se pudo cerrar el evento.");
@@ -60,16 +34,6 @@ export function CloseEventButton({ eventId, disabled }: Props) {
         return;
       }
 
-      if (!type.includes("spreadsheetml")) {
-        setError("Respuesta inesperada del servidor.");
-        return;
-      }
-
-      const blob = await res.blob();
-      const name =
-        filenameFromContentDisposition(res.headers.get("content-disposition")) ??
-        `asistencia-${eventId}.xlsx`;
-      downloadBlob(blob, name);
       setDone(true);
       router.refresh();
     } catch {
@@ -80,12 +44,12 @@ export function CloseEventButton({ eventId, disabled }: Props) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <button
         type="button"
         disabled={disabled || loading}
         onClick={onClose}
-        className="btn-primary w-full sm:w-auto touch-manipulation disabled:opacity-50"
+        className="btn-primary w-full touch-manipulation sm:w-auto disabled:opacity-50"
       >
         {loading ? (
           <span className="inline-flex items-center gap-2">
@@ -93,10 +57,10 @@ export function CloseEventButton({ eventId, disabled }: Props) {
               className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
               aria-hidden
             />
-            Cerrando y generando Excel…
+            Cerrando…
           </span>
         ) : (
-          "Cerrar evento y descargar Excel"
+          "Cerrar evento"
         )}
       </button>
       {error ? (
@@ -111,8 +75,8 @@ export function CloseEventButton({ eventId, disabled }: Props) {
         <div className="rounded-xl border border-emerald-300/60 bg-emerald-50/95 p-4 text-sm text-emerald-900 backdrop-blur-md dark:border-emerald-400/30 dark:bg-emerald-500/10 dark:text-emerald-50">
           <p className="font-semibold text-emerald-900 dark:text-emerald-100">Listo</p>
           <p className="mt-2 leading-relaxed text-emerald-800/95 dark:text-emerald-100/90">
-            El evento quedó cerrado y se descargó el archivo{" "}
-            <span className="font-mono text-xs">.xlsx</span> con la tabla y las firmas.
+            El evento quedó cerrado. Nadie podrá enviar más asistencias desde el
+            enlace público.
           </p>
         </div>
       ) : null}

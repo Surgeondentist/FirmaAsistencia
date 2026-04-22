@@ -151,7 +151,6 @@ export const SignatureCanvas = forwardRef<SignatureCanvasHandle>(
       const el = canvasRef.current;
       const ctx = getCtx();
       if (!el || !ctx) return null;
-      const dpr = window.devicePixelRatio || 1;
       const sw = el.width;
       const sh = el.height;
       if (sw === 0 || sh === 0) return null;
@@ -161,7 +160,9 @@ export const SignatureCanvas = forwardRef<SignatureCanvasHandle>(
       const fctx = full.getContext("2d");
       if (!fctx) return null;
       fctx.drawImage(el, 0, 0);
-      return buildCompressedPng(full, sw / dpr, sh / dpr);
+      // Debe ser el tamaño en píxeles del bitmap (igual que el canvas), no sw/dpr:
+      // con DPR>1, sw/dpr recortaba solo la esquina superior izquierda en móviles.
+      return buildCompressedPng(full, sw, sh);
     },
   }));
 

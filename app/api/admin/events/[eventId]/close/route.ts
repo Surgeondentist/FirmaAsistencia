@@ -2,11 +2,6 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { isEventOwnedByUser } from "@/lib/eventOwnership";
-import {
-  buildEventXlsxBuffer,
-  contentDispositionAttachment,
-  xlsxAttachmentFilename,
-} from "@/lib/eventExportXlsx";
 import { getEvent, registerEventIdForOwner, saveEvent } from "@/lib/kv";
 
 export async function POST(
@@ -30,6 +25,10 @@ export async function POST(
     return NextResponse.json({ error: "No autorizado." }, { status: 403 });
   }
 
+  if (event.status === "closed") {
+    return NextResponse.json({ error: "El evento ya estaba cerrado." }, { status: 400 });
+  }
+
   if (!event.ownerId) {
     event.ownerId = ownerId;
     await registerEventIdForOwner(ownerId, event.id);
@@ -38,21 +37,5 @@ export async function POST(
   event.status = "closed";
   await saveEvent(event);
 
-  try {
-    const buffer = await buildEventXlsxBuffer(event);
-    const filename = xlsxAttachmentFilename(event);
-    return new NextResponse(new Uint8Array(buffer), {
-      status: 200,
-      headers: {
-        "Content-Type":
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "Content-Disposition": contentDispositionAttachment(filename),
-        "Cache-Control": "no-store",
-      },
-    });
-  } catch (e) {
-    const message =
-      e instanceof Error ? e.message : "No se pudo generar el archivo Excel.";
-    return NextResponse.json({ error: message }, { status: 500 });
-  }
+  return NextResponse.json({ ok: true });
 }

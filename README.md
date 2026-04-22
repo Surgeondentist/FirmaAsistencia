@@ -64,7 +64,7 @@ El enlace del logo inferior usa la misma base que `NEXTAUTH_URL` (en local abre 
 
 - `/attend/[eventId]` — Formulario público de asistencia.
 - `/admin` — Lista de **tus** eventos y creación de nuevos (sesión Google).
-- `/admin/event/[eventId]` — Detalle, firmas y cierre con descarga **.xlsx**.
+- `/admin/event/[eventId]` — Detalle, firmas, exportación **.xlsx** (independiente) y cierre del evento.
 
 ## Scripts
 

@@ -4,6 +4,8 @@ import { getServerSession } from "next-auth/next";
 import { AdminConfigMessage } from "@/components/AdminConfigMessage";
 import { AttendeeTable } from "@/components/AttendeeTable";
 import { CloseEventButton } from "@/components/CloseEventButton";
+import { ExportEventXlsxButton } from "@/components/ExportEventXlsxButton";
+import { CopyPublicEventLinkButton } from "@/components/CopyPublicEventLinkButton";
 import { DeleteEventButton } from "@/components/DeleteEventButton";
 import { authOptions } from "@/lib/auth";
 import { isEventOwnedByUser } from "@/lib/eventOwnership";
@@ -77,6 +79,10 @@ export default async function AdminEventPage({ params }: Props) {
       <span className="badge-closed">Cerrado</span>
     );
 
+  const baseUrl =
+    process.env.NEXTAUTH_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
+  const publicAttendUrl = `${baseUrl}/attend/${event.id}`;
+
   return (
     <main className="mx-auto max-w-5xl px-4 py-10 sm:py-12">
       <Link href="/admin" className="link-back">
@@ -111,15 +117,13 @@ export default async function AdminEventPage({ params }: Props) {
               {new Date(event.createdAt).toLocaleString("es-ES")}
             </span>
           </p>
-          <p className="theme-muted mt-2 text-sm">
-            Enlace público:{" "}
-            <span className="theme-mono-link break-all font-mono text-xs">
-              {`${
-                process.env.NEXTAUTH_URL?.replace(/\/$/, "") ??
-                "http://localhost:3000"
-              }/attend/${event.id}`}
+          <p className="theme-muted mt-2 text-sm">Enlace público</p>
+          <div className="mt-1.5 flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
+            <span className="theme-mono-link min-w-0 flex-1 break-all font-mono text-xs leading-relaxed">
+              {publicAttendUrl}
             </span>
-          </p>
+            <CopyPublicEventLinkButton url={publicAttendUrl} />
+          </div>
         </div>
         <DeleteEventButton
           eventId={event.id}
@@ -128,15 +132,28 @@ export default async function AdminEventPage({ params }: Props) {
         />
       </header>
 
-      <section className="mt-8">
+      <section className="mt-8 grid gap-6 sm:grid-cols-2">
         <div className="glass-panel-soft">
           <h2 className="theme-muted text-sm font-semibold uppercase tracking-wider">
-            Exportación (Excel)
+            Exportar (Excel)
           </h2>
           <p className="theme-muted mt-2 text-sm leading-relaxed">
-            Al cerrar el evento se descarga un archivo{" "}
+            Descarga un{" "}
             <span className="theme-mono-link font-mono text-xs">.xlsx</span> con
-            las columnas configuradas, la hora de envío y las firmas (si las hay).
+            las columnas, la hora de envío y las firmas (si las hay). El evento
+            puede seguir abierto o cerrado; esto no cambia el estado.
+          </p>
+          <div className="mt-4">
+            <ExportEventXlsxButton eventId={event.id} />
+          </div>
+        </div>
+        <div className="glass-panel-soft">
+          <h2 className="theme-muted text-sm font-semibold uppercase tracking-wider">
+            Cerrar evento
+          </h2>
+          <p className="theme-muted mt-2 text-sm leading-relaxed">
+            Bloquea nuevos envíos desde el enlace público. Puedes exportar el
+            Excel antes o después de cerrar.
           </p>
           <div className="mt-4">
             <CloseEventButton
