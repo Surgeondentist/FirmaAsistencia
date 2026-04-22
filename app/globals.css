@@ -123,6 +123,42 @@
   }
 }
 
+/* Meteoritos: trayectoria en coords. de pantalla (variables por elemento) */
+@keyframes meteor-flight {
+  0% {
+    transform: translate3d(var(--mx-start), var(--my-start), 0) rotate(var(--m-rot));
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate3d(var(--mx-end), var(--my-end), 0) rotate(var(--m-rot));
+    opacity: 0;
+  }
+}
+
+.meteor-streak {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform, opacity;
+  animation-name: meteor-flight;
+  /* Velocidad casi constante (trayectoria larga y lenta) */
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .meteor-streak {
+    animation: none;
+    opacity: 0 !important;
+  }
+}
+
 @layer utilities {
   /* Modo claro: tonos más profundos (WCAG AA); oscuro sin cambiar demasiado */
   .theme-heading {

@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { CortexDecor } from "@/components/CortexDecor";
+import { Meteors } from "@/components/Meteors";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { SessionProvider } from "@/components/SessionProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { RedshellLogo } from "@/components/RedshellLogo";
@@ -34,6 +36,7 @@ export default function RootLayout({
         </Script>
         <ThemeProvider>
           <CortexDecor />
+          <Meteors number={18} />
           <div
             className="pointer-events-none fixed inset-0 -z-10 opacity-[0.18] mix-blend-soft-light dark:opacity-40"
             aria-hidden
@@ -47,6 +50,7 @@ export default function RootLayout({
           <div className="relative z-[2] isolate text-slate-900 dark:text-slate-100">
             <SessionProvider>{children}</SessionProvider>
           </div>
+          <GoogleAnalytics />
         </ThemeProvider>
       </body>
     </html>
