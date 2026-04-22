@@ -86,10 +86,12 @@ export function AdminConfigMessage({ reason }: Props) {
                 </code>
               </li>
               <li>
-                <code className="rounded bg-amber-100/80 px-1.5 py-0.5 font-mono text-xs dark:bg-amber-900/50 dark:text-amber-100">
-                  ADMIN_EMAIL
+                Cualquier usuario con cuenta Google puede iniciar sesión; cada uno
+                solo ve los eventos que creó (identidad por{" "}
+                <code className="rounded bg-amber-100/80 px-1 font-mono text-xs dark:bg-amber-900/50 dark:text-amber-100">
+                  sub
                 </code>{" "}
-                — correos permitidos (varios separados por coma); deben coincidir con la cuenta Google.
+                de OpenID).
               </li>
             </ul>
           </div>

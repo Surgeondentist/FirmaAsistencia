@@ -40,9 +40,14 @@ function client() {
 
 const EVENT_PREFIX = "event:";
 const EVENTS_LIST_KEY = "events:list";
+const OWNER_EVENTS_PREFIX = "owner:";
 
 function eventKey(id: string) {
   return `${EVENT_PREFIX}${id}`;
+}
+
+function ownerEventIdsKey(ownerId: string) {
+  return `${OWNER_EVENTS_PREFIX}${ownerId}:events`;
 }
 
 export async function getEvent(id: string): Promise<EventRecord | null> {
@@ -75,6 +80,41 @@ export async function unregisterEventId(id: string): Promise<void> {
   const current = await listEventIds();
   const next = current.filter((x) => x !== id);
   await client().set(EVENTS_LIST_KEY, next);
+}
+
+/** Índice por dueño (Google `sub`). */
+export async function listEventIdsForOwner(ownerId: string): Promise<string[]> {
+  const list = await client().get<string[]>(ownerEventIdsKey(ownerId));
+  return Array.isArray(list) ? list : [];
+}
+
+export async function registerEventIdForOwner(
+  ownerId: string,
+  id: string
+): Promise<void> {
+  const key = ownerEventIdsKey(ownerId);
+  const current = await listEventIdsForOwner(ownerId);
+  if (!current.includes(id)) {
+    await client().set(key, [id, ...current]);
+  }
+}
+
+export async function unregisterEventIdFromOwner(
+  ownerId: string,
+  id: string
+): Promise<void> {
+  const key = ownerEventIdsKey(ownerId);
+  const current = await listEventIdsForOwner(ownerId);
+  const next = current.filter((x) => x !== id);
+  await client().set(key, next);
+}
+
+/** Quita el id de la lista global (legacy) y de la lista del dueño si aplica. */
+export async function removeEventFromAllLists(event: EventRecord): Promise<void> {
+  await unregisterEventId(event.id);
+  if (event.ownerId) {
+    await unregisterEventIdFromOwner(event.ownerId, event.id);
+  }
 }
 
 export async function deleteEvent(id: string): Promise<void> {

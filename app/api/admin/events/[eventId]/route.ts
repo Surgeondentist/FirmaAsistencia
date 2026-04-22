@@ -1,14 +1,17 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { authOptions, isAdminEmail } from "@/lib/auth";
-import { deleteEvent, getEvent, unregisterEventId } from "@/lib/kv";
+import { authOptions } from "@/lib/auth";
+import { isEventOwnedByUser } from "@/lib/eventOwnership";
+import { deleteEvent, getEvent, removeEventFromAllLists } from "@/lib/kv";
 
 export async function DELETE(
   _req: Request,
   { params }: { params: { eventId: string } }
 ) {
   const session = await getServerSession(authOptions);
-  if (!isAdminEmail(session?.user?.email ?? null)) {
+  const ownerId = session?.user?.id?.trim();
+  const ownerEmail = session?.user?.email?.trim() ?? "";
+  if (!ownerId || !ownerEmail) {
     return NextResponse.json({ error: "No autorizado." }, { status: 403 });
   }
 
@@ -18,7 +21,11 @@ export async function DELETE(
     return NextResponse.json({ error: "Evento no encontrado." }, { status: 404 });
   }
 
+  if (!isEventOwnedByUser(event, ownerId, ownerEmail)) {
+    return NextResponse.json({ error: "No autorizado." }, { status: 403 });
+  }
+
+  await removeEventFromAllLists(event);
   await deleteEvent(eventId);
-  await unregisterEventId(eventId);
   return NextResponse.json({ ok: true });
 }

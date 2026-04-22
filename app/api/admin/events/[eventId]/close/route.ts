@@ -1,19 +1,22 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { authOptions, isAdminEmail } from "@/lib/auth";
+import { authOptions } from "@/lib/auth";
+import { isEventOwnedByUser } from "@/lib/eventOwnership";
 import {
   buildEventXlsxBuffer,
   contentDispositionAttachment,
   xlsxAttachmentFilename,
 } from "@/lib/eventExportXlsx";
-import { getEvent, saveEvent } from "@/lib/kv";
+import { getEvent, registerEventIdForOwner, saveEvent } from "@/lib/kv";
 
 export async function POST(
   _req: Request,
   { params }: { params: { eventId: string } }
 ) {
   const session = await getServerSession(authOptions);
-  if (!isAdminEmail(session?.user?.email ?? null)) {
+  const ownerId = session?.user?.id?.trim();
+  const ownerEmail = session?.user?.email?.trim() ?? "";
+  if (!ownerId || !ownerEmail) {
     return NextResponse.json({ error: "No autorizado." }, { status: 403 });
   }
 
@@ -21,6 +24,15 @@ export async function POST(
   const event = await getEvent(eventId);
   if (!event) {
     return NextResponse.json({ error: "Evento no encontrado." }, { status: 404 });
+  }
+
+  if (!isEventOwnedByUser(event, ownerId, ownerEmail)) {
+    return NextResponse.json({ error: "No autorizado." }, { status: 403 });
+  }
+
+  if (!event.ownerId) {
+    event.ownerId = ownerId;
+    await registerEventIdForOwner(ownerId, event.id);
   }
 
   event.status = "closed";

@@ -28,7 +28,7 @@ export function AdminSignIn() {
         Administración
       </h1>
       <p className="theme-sub mt-3 text-sm leading-relaxed">
-        Inicia sesión con la cuenta de Google autorizada.
+        Inicia sesión con Google para crear eventos y ver solo los tuyos.
       </p>
       <button
         type="button"

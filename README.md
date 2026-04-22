@@ -2,7 +2,7 @@
 
 Aplicación web mínima para que un administrador cree eventos de asistencia, comparta un enlace temporal, recoja nombre, documento y firma manuscrita por participante, cierre el evento y descargue todo en un **Excel (.xlsx)** con las firmas como imágenes en la hoja.
 
-Stack: Next.js 14 (App Router), Tailwind CSS, Vercel KV, NextAuth (Google, un solo correo admin), generación de Excel con ExcelJS, despliegue en Vercel.
+Stack: Next.js 14 (App Router), Tailwind CSS, Vercel KV, NextAuth (Google: cualquier usuario con email), generación de Excel con ExcelJS, despliegue en Vercel.
 
 ## Requisitos
 
@@ -23,10 +23,11 @@ Stack: Next.js 14 (App Router), Tailwind CSS, Vercel KV, NextAuth (Google, un so
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | OAuth de Google para NextAuth. |
 | `NEXTAUTH_SECRET` | Secreto para firmar cookies de sesión. |
 | `NEXTAUTH_URL` | URL pública de la app (en local: `http://localhost:3000`). |
-| `ADMIN_EMAIL` | Correo(s) que pueden usar el panel `/admin` (varios: separados por coma o `;`). |
 | `KV_*` o `STORAGE_KV_*` | Credenciales del almacén Redis/KV. |
 
-## Configuración en Google Cloud (solo login admin)
+El panel `/admin` admite **cualquier** cuenta Google con correo verificado; cada usuario solo lista y gestiona eventos con su `ownerId` (Google `sub`). Los eventos antiguos sin `ownerId` siguen visibles para el correo guardado en `adminEmail`.
+
+## Configuración en Google Cloud (OAuth para el panel)
 
 1. Crea un proyecto (o usa uno existente).
 2. APIs y servicios → Credenciales → Crear credenciales → **ID de cliente OAuth** (aplicación web).
@@ -62,7 +63,7 @@ El enlace del logo inferior usa la misma base que `NEXTAUTH_URL` (en local abre 
 ## Rutas principales
 
 - `/attend/[eventId]` — Formulario público de asistencia.
-- `/admin` — Lista de eventos y creación (solo correos listados en `ADMIN_EMAIL`).
+- `/admin` — Lista de **tus** eventos y creación de nuevos (sesión Google).
 - `/admin/event/[eventId]` — Detalle, firmas y cierre con descarga **.xlsx**.
 
 ## Scripts

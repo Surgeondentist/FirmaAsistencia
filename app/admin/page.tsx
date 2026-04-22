@@ -3,7 +3,7 @@ import { AdminConfigMessage } from "@/components/AdminConfigMessage";
 import { AdminDashboard } from "@/components/AdminDashboard";
 import { AdminSignIn } from "@/components/AdminSignIn";
 import { authOptions } from "@/lib/auth";
-import { loadEventsForAdmin } from "@/lib/adminEvents";
+import { loadEventsForOwner } from "@/lib/adminEvents";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +15,9 @@ export default async function AdminPage() {
     return <AdminConfigMessage reason="session" />;
   }
 
-  if (!session?.user?.email) {
+  const ownerId = session?.user?.id?.trim();
+  const ownerEmail = session?.user?.email?.trim();
+  if (!ownerId || !ownerEmail) {
     return (
       <main className="flex min-h-dvh items-center justify-center px-4 py-16">
         <AdminSignIn />
@@ -25,7 +27,7 @@ export default async function AdminPage() {
 
   let events;
   try {
-    events = await loadEventsForAdmin();
+    events = await loadEventsForOwner(ownerId, ownerEmail);
   } catch {
     return <AdminConfigMessage reason="kv" />;
   }

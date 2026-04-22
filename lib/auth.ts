@@ -2,22 +2,6 @@ import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { getServerSession } from "next-auth/next";
 
-/** Correos permitidos para el panel; `ADMIN_EMAIL` con varios separados por coma o punto y coma. */
-function parseAdminEmails(): string[] {
-  const raw = process.env.ADMIN_EMAIL ?? "";
-  return raw
-    .split(/[,;]/)
-    .map((s) => s.trim().toLowerCase())
-    .filter(Boolean);
-}
-
-function isAllowedAdminEmail(email: string | null | undefined): boolean {
-  if (!email) return false;
-  const normalized = email.trim().toLowerCase();
-  const allowed = parseAdminEmails();
-  return allowed.length > 0 && allowed.includes(normalized);
-}
-
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
@@ -33,12 +17,27 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async signIn({ user }) {
-      const email = user.email?.trim().toLowerCase();
-      if (!email || !isAllowedAdminEmail(email)) {
-        return false;
+    async jwt({ token, account, profile }) {
+      if (
+        account?.provider === "google" &&
+        profile &&
+        typeof profile === "object" &&
+        "sub" in profile &&
+        typeof (profile as { sub?: unknown }).sub === "string"
+      ) {
+        token.sub = (profile as { sub: string }).sub;
       }
-      return true;
+      return token;
+    },
+    async session({ session, token }) {
+      const sub = typeof token.sub === "string" ? token.sub.trim() : "";
+      if (session.user && sub) {
+        session.user.id = sub;
+      }
+      return session;
+    },
+    async signIn({ user }) {
+      return Boolean(user?.email?.trim());
     },
   },
   pages: {
@@ -46,15 +45,15 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
-export async function getAdminSession() {
+/**
+ * Sesión válida para el panel: Google con email y `sub` en sesión (`user.id`).
+ */
+export async function getOwnerSession() {
   const session = await getServerSession(authOptions);
-  const email = session?.user?.email?.trim().toLowerCase();
-  if (!email || !isAllowedAdminEmail(email)) {
+  const email = session?.user?.email?.trim();
+  const id = session?.user?.id?.trim();
+  if (!email || !id) {
     return null;
   }
   return session;
-}
-
-export function isAdminEmail(email: string | null | undefined): boolean {
-  return isAllowedAdminEmail(email);
 }

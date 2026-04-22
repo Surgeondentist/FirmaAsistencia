@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { nanoid } from "nanoid";
 import { getServerSession } from "next-auth/next";
-import { authOptions, isAdminEmail } from "@/lib/auth";
-import { registerEventId, saveEvent } from "@/lib/kv";
+import { authOptions } from "@/lib/auth";
+import { registerEventIdForOwner, saveEvent } from "@/lib/kv";
 import type { EventColumn, EventRecord } from "@/lib/types";
 
 const MAX_COLUMNS = 10;
@@ -17,8 +17,9 @@ type CreateBody = {
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
-  const email = session?.user?.email;
-  if (!isAdminEmail(email ?? null)) {
+  const email = session?.user?.email?.trim();
+  const ownerId = session?.user?.id?.trim();
+  if (!email || !ownerId) {
     return NextResponse.json({ error: "No autorizado." }, { status: 403 });
   }
 
@@ -91,13 +92,14 @@ export async function POST(req: Request) {
     name,
     createdAt: new Date().toISOString(),
     status: "open",
-    adminEmail: email!,
+    ownerId,
+    adminEmail: email,
     columns,
     attendees: [],
   };
 
   await saveEvent(event);
-  await registerEventId(id);
+  await registerEventIdForOwner(ownerId, id);
 
   return NextResponse.json({
     id,

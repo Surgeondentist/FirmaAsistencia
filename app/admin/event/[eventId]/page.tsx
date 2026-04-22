@@ -5,7 +5,8 @@ import { AdminConfigMessage } from "@/components/AdminConfigMessage";
 import { AttendeeTable } from "@/components/AttendeeTable";
 import { CloseEventButton } from "@/components/CloseEventButton";
 import { DeleteEventButton } from "@/components/DeleteEventButton";
-import { authOptions, isAdminEmail } from "@/lib/auth";
+import { authOptions } from "@/lib/auth";
+import { isEventOwnedByUser } from "@/lib/eventOwnership";
 import { getEvent } from "@/lib/kv";
 
 export const dynamic = "force-dynamic";
@@ -20,18 +21,20 @@ export default async function AdminEventPage({ params }: Props) {
     return <AdminConfigMessage reason="session" />;
   }
 
-  if (!isAdminEmail(session?.user?.email ?? null)) {
+  const ownerId = session?.user?.id?.trim();
+  const ownerEmail = session?.user?.email?.trim() ?? "";
+  if (!ownerId || !ownerEmail) {
     return (
       <main className="mx-auto max-w-2xl px-4 py-16 text-center sm:py-20">
         <div className="glass-panel">
           <h1 className="theme-heading text-xl font-semibold tracking-tight">
-            No autorizado
+            Inicia sesión
           </h1>
           <p className="theme-sub mt-3 text-sm leading-relaxed">
-            Esta sección solo está disponible para el administrador.
+            Necesitas una cuenta de Google para ver este evento.
           </p>
           <Link href="/admin" className="btn-secondary mt-8 inline-flex">
-            Volver al inicio de sesión
+            Ir al panel
           </Link>
         </div>
       </main>
@@ -46,6 +49,25 @@ export default async function AdminEventPage({ params }: Props) {
   }
   if (!event) {
     notFound();
+  }
+
+  if (!isEventOwnedByUser(event, ownerId, ownerEmail)) {
+    return (
+      <main className="mx-auto max-w-2xl px-4 py-16 text-center sm:py-20">
+        <div className="glass-panel">
+          <h1 className="theme-heading text-xl font-semibold tracking-tight">
+            No autorizado
+          </h1>
+          <p className="theme-sub mt-3 text-sm leading-relaxed">
+            Este evento pertenece a otra cuenta. Solo puedes gestionar los que
+            creaste tú.
+          </p>
+          <Link href="/admin" className="btn-secondary mt-8 inline-flex">
+            Volver a mis eventos
+          </Link>
+        </div>
+      </main>
+    );
   }
 
   const badge =
