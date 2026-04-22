@@ -18,18 +18,21 @@ function driveTransferOwnerEmail(): string | null {
 
 async function transferFileOwnershipToUser(
   drive: drive_v3.Drive,
-  fileId: string
+  fileId: string,
+  ownerEmail: string
 ): Promise<void> {
-  const email = driveTransferOwnerEmail();
-  if (!email) return;
   await drive.permissions.create({
     fileId,
     requestBody: {
       role: "owner",
       type: "user",
-      emailAddress: email,
+      emailAddress: ownerEmail,
     },
     transferOwnership: true,
+    /** Mueve el ítem a la raíz de “Mi unidad” del nuevo propietario (cuentas personales). */
+    moveToNewOwnersRoot: true,
+    /** Obligatorio no desactivarlo en transferencias de propiedad. */
+    sendNotificationEmail: true,
     supportsAllDrives: true,
   });
 }
@@ -72,6 +75,13 @@ export async function exportToGoogleSheets(
     throw new Error("GOOGLE_DRIVE_FOLDER_ID no está configurado.");
   }
 
+  const transferTo = driveTransferOwnerEmail();
+  if (!transferTo) {
+    throw new Error(
+      "Define ADMIN_EMAIL o GOOGLE_DRIVE_TRANSFER_OWNER_EMAIL con un correo Google (Gmail o Workspace) al que transferir la hoja y las firmas; sin eso la cuenta de servicio agota su cuota al crear archivos."
+    );
+  }
+
   const auth = getJwtClient();
   await auth.authorize();
 
@@ -99,6 +109,8 @@ export async function exportToGoogleSheets(
   if (!spreadsheetId) {
     throw new Error("No se pudo crear la hoja de cálculo.");
   }
+
+  await transferFileOwnershipToUser(drive, spreadsheetId, transferTo);
 
   const meta = await sheets.spreadsheets.get({
     spreadsheetId,
@@ -154,7 +166,7 @@ export async function exportToGoogleSheets(
         requestBody: { role: "reader", type: "anyone" },
         supportsAllDrives: true,
       });
-      await transferFileOwnershipToUser(drive, fileId);
+      await transferFileOwnershipToUser(drive, fileId, transferTo);
       const formula = `=IMAGE("https://drive.google.com/uc?id=${fileId}")`;
       cell = {
         updateCells: {
@@ -243,8 +255,6 @@ export async function exportToGoogleSheets(
       requests: [...formulaRequests, ...dimensionRequests],
     },
   });
-
-  await transferFileOwnershipToUser(drive, spreadsheetId);
 
   const link =
     createRes.data.webViewLink ??
