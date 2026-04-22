@@ -12,7 +12,7 @@ export default async function AdminPage() {
   try {
     session = await getServerSession(authOptions);
   } catch {
-    return <AdminConfigMessage />;
+    return <AdminConfigMessage reason="session" />;
   }
 
   if (!session?.user?.email) {
@@ -27,7 +27,7 @@ export default async function AdminPage() {
   try {
     events = await loadEventsForAdmin();
   } catch {
-    return <AdminConfigMessage />;
+    return <AdminConfigMessage reason="kv" />;
   }
 
   return (

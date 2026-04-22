@@ -16,7 +16,7 @@ export default async function AdminEventPage({ params }: Props) {
   try {
     session = await getServerSession(authOptions);
   } catch {
-    return <AdminConfigMessage />;
+    return <AdminConfigMessage reason="session" />;
   }
 
   if (!isAdminEmail(session?.user?.email ?? null)) {
@@ -41,7 +41,7 @@ export default async function AdminEventPage({ params }: Props) {
   try {
     event = await getEvent(params.eventId);
   } catch {
-    return <AdminConfigMessage />;
+    return <AdminConfigMessage reason="kv" />;
   }
   if (!event) {
     notFound();
